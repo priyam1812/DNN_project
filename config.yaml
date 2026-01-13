@@ -1,0 +1,111 @@
+# ===============================
+# Experiment Configuration File
+# ===============================
+
+experiment:
+  name: visual_story_reasoning_cross_modal_attention
+  description: >
+    Multimodal sequence modelling for visual story reasoning using
+    pretrained CNN and Transformer encoders with cross-modal attention
+    and LSTM-based temporal modelling.
+  seed: 42
+  device: cuda   # cuda or cpu
+
+# ===============================
+# Dataset Configuration
+# ===============================
+dataset:
+  name: StoryReasoning
+  source: huggingface
+  hf_dataset: daniel3303/StoryReasoning
+  split: train
+  max_stories: 200          # subset used for training (Colab-safe)
+  sequence_length: 4        # K image-text pairs
+  image_size: [224, 224]
+  text_max_length: 128
+  sliding_window: true
+  lazy_loading: true        # RAM-safe on-the-fly sampling
+
+# ===============================
+# Model Configuration
+# ===============================
+model:
+  embedding_dim: 512
+
+  visual_encoder:
+    type: resnet18
+    pretrained: true
+    freeze_backbone: true
+
+  text_encoder:
+    type: bert
+    model_name: bert-base-uncased
+    pretrained: true
+    freeze_encoder: true
+
+  fusion:
+    type: cross_modal_attention
+    num_heads: 4
+
+  temporal_model:
+    type: lstm
+    hidden_size: 512
+    num_layers: 1
+    bidirectional: false
+
+  decoders:
+    image_decoder:
+      type: linear
+      output_dim: 512
+    text_decoder:
+      type: linear
+      vocab_size: 30522
+
+# ===============================
+# Training Configuration
+# ===============================
+training:
+  epochs: 5
+  batch_size: 2
+  learning_rate: 0.0001
+  optimizer: adam
+  weight_decay: 0.0
+  gradient_clipping: false
+
+  losses:
+    image_loss:
+      type: mse
+      weight: 1.0
+    text_loss:
+      type: cross_entropy
+      weight: 1.0
+
+# ===============================
+# Evaluation Configuration
+# ===============================
+evaluation:
+  metrics:
+    text:
+      - top1_accuracy
+      - top5_accuracy
+    image:
+      - cosine_similarity
+  use_proxy_classification: true
+  evaluation_batches: 20
+
+# ===============================
+# Logging & Outputs
+# ===============================
+logging:
+  log_interval: 1
+  save_figures: true
+  results_dir: results/
+  figures_dir: results/figures
+  tables_dir: results/tables
+
+# ===============================
+# Reproducibility
+# ===============================
+reproducibility:
+  deterministic: true
+  cudnn_benchmark: false
