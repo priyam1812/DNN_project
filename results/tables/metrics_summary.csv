@@ -1,0 +1,2 @@
+epochs,final_training_loss,text_top1_accuracy,text_top5_accuracy,image_cosine_similarity
+20,0.06750107690452434,1.0,1.0,0.7830475568771362
